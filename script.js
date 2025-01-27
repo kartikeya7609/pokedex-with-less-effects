@@ -1,4 +1,4 @@
-const pokemonConst = 25;
+const pokemonConst = 30;
 var pokedex = {};
 const bulba =document.querySelector("#pokemon")
 window.onload = async function () {
