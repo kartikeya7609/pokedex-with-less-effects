@@ -1,0 +1,30 @@
+*{
+    margin:0px;
+    padding:0px;
+    color:black;    
+}
+#content-box{
+    width:500px;
+    height:500px;
+    border:10px solid light lightgray;
+    border-radius:10px;
+    background-color:green;
+    margin: auto auto;
+    margin-top:60px;
+    display:flex;
+    flex-direction:row;
+}
+#pokemon-info{
+    width:250px;
+    height:500px;
+    background-color:aqua;
+}
+#pokemon-list{
+    width:250px;
+    height:500px;
+    background-color:red;
+    font-size:18px;
+    overflow-y:auto;
+}
+@media screen and (max-width:800px){
+}
