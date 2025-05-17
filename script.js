@@ -1,51 +1,73 @@
-const pokemonConst = 30;
-var pokedex = {};
-const bulba =document.querySelector("#pokemon")
-window.onload = async function () {
-    for(let i=1;i<pokemonConst;i++){
-            await getPokemon(i);
-            let pokemon =document.createElement("div");
-            pokemon.id =i;
-            pokemon.innerText=i.toString()+ "."+pokedex[i]['name'].toUpperCase();
-            pokemon.classList.add("pokemon-name");
-            document.getElementById("pokemon-list").append(pokemon);
-            pokemon.addEventListener("click",updatePokemon);
-    }
-};
+const pokemonList = document.getElementById("pokemon-list");
+const pokemonImg = document.getElementById("pokemon-img");
+const pokemonName = document.getElementById("pokemon-name");
+const pokemonDesc = document.getElementById("pokemon-desc");
+const pokemonTypes = document.getElementById("pokemon-types");
+const pokemonDescription = document.getElementById("pokemon-description");
 
-async function getPokemon(num) {
-    try {
-        let url = "https://pokeapi.co/api/v2/pokemon/" + num.toString();
-        let res = await fetch(url);
-        let pokemon = await res.json();
-        let pokemonName = pokemon["name"];
-        let pokemonType = pokemon["types"].map(type =>type["type"]["name"]);
-        let pokemonImg = pokemon["sprites"]["front_default"];
-        res = await fetch(pokemon["species"]["url"]);
-        let speciesData = await res.json();
-        let flavorTextEntry = speciesData["flavor_text_entries"].find(entry => entry.language.name === "en");
-        let pokemonDesc = flavorTextEntry ? flavorTextEntry["flavor_text"] : "No description available.";
-        pokedex[num] = {
-            name: pokemonName,
-            img: pokemonImg,
-            types: pokemonType,
-            desc: pokemonDesc
-        };   
-        document.getElementById("pokemon-img").src = pokemonImg;
-        document.getElementById("pokemon-name").textContent = capitalize(pokemonName);
-        document.getElementById("pokemon-desc").textContent = pokemonDesc;
-        document.getElementById("pokemon-types").textContent = `Type(s): ${pokemonType}`;
-    } 
-    catch (error) {
-        console.error("Error fetching Pokémon data:", error);
-    }function capitalize(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
+// Fetch and display the list of Pokémon
+async function fetchPokemonList() {
+  try {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
+    const data = await response.json();
+    data.results.forEach((pokemon, index) => {
+      const item = document.createElement("div");
+      item.classList.add("pokemon-item");
+      item.textContent = `${index + 1}. ${capitalize(pokemon.name)}`;
+      item.addEventListener("click", () => fetchPokemonDetails(pokemon.name));
+      pokemonList.appendChild(item);
+    });
+  } catch (error) {
+    console.error("Error fetching Pokémon list:", error);
+  }
 }
-function updatePokemon(){
-    document.getElementById("pokemon-img").src =pokedex[this.id]["img"];
-    document.getElementById("pokemon-name").textContent = pokedex[this.id]["name"];
-    document.getElementById("pokemon-desc").textContent = pokedex[this.id]["desc"];
-    document.getElementById("pokemon-types").textContent = pokedex[this.id]["types"];
 
+// Fetch and display details of a selected Pokémon
+async function fetchPokemonDetails(name) {
+  try {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+    const data = await response.json();
+    pokemonImg.src = data.sprites.front_default;
+    pokemonName.textContent = capitalize(data.name);
+    pokemonDesc.textContent = `ID: ${data.id}`;
+    displayTypes(data.types);
+    fetchPokemonSpecies(data.species.url);
+  } catch (error) {
+    console.error("Error fetching Pokémon details:", error);
+  }
 }
+
+// Display Pokémon types
+function displayTypes(types) {
+  pokemonTypes.innerHTML = "";
+  types.forEach((typeInfo) => {
+    const span = document.createElement("span");
+    span.classList.add("type-box", typeInfo.type.name);
+    span.textContent = capitalize(typeInfo.type.name);
+    pokemonTypes.appendChild(span);
+  });
+}
+
+// Fetch and display Pokémon description
+async function fetchPokemonSpecies(url) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    const entry = data.flavor_text_entries.find(
+      (entry) => entry.language.name === "en"
+    );
+    pokemonDescription.textContent = entry
+      ? entry.flavor_text
+      : "No description available.";
+  } catch (error) {
+    console.error("Error fetching Pokémon species:", error);
+  }
+}
+
+// Capitalize first letter
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Initialize
+fetchPokemonList();
